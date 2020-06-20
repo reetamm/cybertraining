@@ -21,12 +21,12 @@ startYear <- 2001
 endYear <- startYear + numYrs - 1
 
 ## Import files
-source('functionDefns.R')
+source('99 - functionDefns.R')
 obsdata <- read.table('PotomacJulSep')
 #testing = read.table('testingdata')
 #training = read.table('trainingdata')
 #params = fromJSON('training.json')
-params <- fromJSON(paramFile) 
+params <- fromJSON(paramFile)
 viterbistates <- read.table(viterbiFile)
 
 ## Spatiotemporal coordinats
@@ -36,14 +36,14 @@ day <- day(date)
 year <- rep(startYear:endYear,each=numDays)
 
 ## Getting the lat and long requires the forcig files to be in the same directory
-file_names <- list.files(pattern="forcing_*",full.names = T) 
-lat <- substr(file_names,11,17) 
+file_names <- list.files(pattern="forcing_*",full.names = T)
+lat <- substr(file_names,11,17)
 long <- substr(file_names,19,26)
 lat <- as.numeric(as.character(lat))
 long <- as.numeric(as.character(long))
 
 ## Parameters of the HMM from the learn process
-alpha <- params$firstEntryProb #Initial distribution at 
+alpha <- params$firstEntryProb #Initial distribution at
 PI <- params$conditionalProb #Transition probability matrix
 dim(params$states)
 mix <- params$states[,,1:numMix] #mixture probabilities
@@ -67,7 +67,7 @@ for(i in 1:numStates)
 {
   #amtDataObs <- training[viterbistates==i,]
   amtDataObs <- obsdata[viterbistates==i,] #Observed Data for the i-th state
-  
+
   #amtDataObs[amtDataObs==0] <- NA
   amtCor <- cor(amtDataObs, use="pairwise.complete.obs", method="spearman") #correlation matrix
   #amtCor <- cor(amtDataObs, use="pairwise.complete.obs")
@@ -98,7 +98,7 @@ for(i in 1:dataLen)
       synthetic[i,j] <- qgamma(inputrandAmt[i,j],shape = gammaparams[[which.gamma]][dailystate,j,1], rate = gammaparams[[which.gamma]][dailystate,j,2])
     }
     }
-  
+
 }
 #tmp <- cor(training)
 tmp <- cor(obsdata) #Correlation matrix of observed data

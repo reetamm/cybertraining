@@ -23,11 +23,11 @@ startYear <- 2001
 endYear <- startYear + numYrs - 1
 
 ## Import files
-source('functionDefns.R')
+source('99 - functionDefns.R')
 inputdata <- read.table('PotomacJulSep')
 
 hmmoutput <- read.table('sim_potomac_data_julsep')
-copulaoutput <- read.table('JulSepWilksSyn',header = T)
+copulaoutput <- read.table('gammacopula',header = T)
 #View(outputdata)
 #outputdata <- outputdata[,-388]
 
@@ -36,15 +36,21 @@ date <- seq(ymd(startDate),ymd(endDate),by='days')
 month <- month(date)
 day <- day(date)
 year <- rep(startYear:endYear,each=numDays)
+## Viterbi states setup
+viterbistates <- read.table(viterbiFile)
+viterbistates <- as.vector(t(viterbistates))
+viterbistates <- viterbistates[!is.na(viterbistates)]
+viterbistates <- viterbistates + 1 #Because MVNHMM has states starting from 0
+length(viterbistates) #Should be the same length as the input data
 
 #### State sequence plots
 viterbigrid <- data.frame(states = as.character(viterbistates), day=rep(1:numDays, numYrs), year = year)
 
 ggplot(viterbigrid, aes(x=day, y=year, fill=states)) + geom_tile() +
       scale_fill_brewer(type = 'qual') + scale_y_continuous(breaks=year) +
-      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 10, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 10, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 10, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 17, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 17, angle = 90, hjust = .5, vjust = 2, face = "plain"),
       legend.text = element_text(size=12), legend.title = element_text(size=15),legend.key.size = unit(.8, "cm")) +
@@ -69,22 +75,20 @@ inputdata$total <- apply(inputdata,1,sum)
 hmmoutput$total <- apply(hmmoutput,1,sum)
 copulaoutput$total <- apply(copulaoutput,1,sum)
 inputdata$source <- 'IMERG'
-copulaoutput$source <- 'Wilks'
+copulaoutput$source <- 'HMM-GC'
 hmmoutput$source <- 'HMM'
 inputdata$seq <- date
 hmmoutput$seq <- date
 copulaoutput$seq <- date
 data <- rbind(inputdata,hmmoutput,copulaoutput)
-data$source <- relevel(as.factor(data$source),ref='IMERG')
-
 #data$total[data$total>10000]=10000
 data$year <- year
 
 ## temporal data
-ggplot(data[data$year==2018 & data$source!='Wilks',],aes(y=total,x=seq,col=source))+geom_line(lwd=1.1) +
-        theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+ggplot(data[data$year==2018 & data$source!='HMM-GC',],aes(y=total,x=seq,col=source))+geom_line(lwd=1.1) +
+        theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
         axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
         axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
         axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
         legend.text = element_text(size=15), legend.title = element_text(size=18)) +
@@ -92,9 +96,9 @@ ggplot(data[data$year==2018 & data$source!='Wilks',],aes(y=total,x=seq,col=sourc
         labs(x='Days', y = 'Daily total basin rainfall (mm)', col = 'Source')
 
 ggplot(data[data$year==2018 & data$source!='HMM',],aes(y=total,x=seq,col=source))+geom_line(lwd=1.1)  +
-        theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+        theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
         axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
         axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
         axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
         legend.text = element_text(size=15), legend.title = element_text(size=18)) +
@@ -112,21 +116,21 @@ hmmgcprecip <- apply(copulaoutput, 2, sum)
 
 basinprecip <- data.frame(inputprecip = inputprecip/numYrs, hmmprecip = hmmprecip/numYrs, hmmgcprecip = hmmgcprecip/numYrs, lat, long)
 
-ggplot(basinprecip,aes(x=long,y=lat,fill=inputprecip)) + geom_tile() + scale_fill_gradientn(colours=rainbow(7)) + 
-        coord_map() +  theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+ggplot(basinprecip,aes(x=long,y=lat,fill=inputprecip)) + geom_tile() + scale_fill_gradientn(colours=rainbow(7)) +
+        coord_map() +  theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
         axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+        axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
         axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
         axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
         legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) +
         labs(x='Longitude', y = 'Latitude', fill = 'Total (mm)', title = 'Total rainfall from Jul-Sep from IMERG')
 
 
-ggplot(basinprecip[basinprecip$hmmprecip<500,],aes(x=long,y=lat,fill=hmmprecip)) + geom_tile() + 
-      scale_fill_gradientn(colours=rainbow(7)) + coord_map() +  
-      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+ggplot(basinprecip[basinprecip$hmmprecip<500,],aes(x=long,y=lat,fill=hmmprecip)) + geom_tile() +
+      scale_fill_gradientn(colours=rainbow(7)) + coord_map() +
+      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
       legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) +
@@ -134,13 +138,13 @@ ggplot(basinprecip[basinprecip$hmmprecip<500,],aes(x=long,y=lat,fill=hmmprecip))
 
 
 ggplot(basinprecip,aes(x=long,y=lat,fill=hmmgcprecip)) + geom_tile() + scale_fill_gradientn(colours=rainbow(7)) +
-      labs(fill = 'Total (mm)', x='Longitude', y='Latitude',title = 'Total rainfall from Jul-Sep from Wilks') + 
-      coord_map() +  theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+      labs(fill = 'Total (mm)', x='Longitude', y='Latitude',title = 'Total rainfall from Jul-Sep from HMM-GC') +
+      coord_map() +  theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
-      legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) 
+      legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm"))
 
 julcorinput <- upperTriangle(cor(inputdata[month==7,]))
 julcorhmm <- upperTriangle(cor(hmmoutput[month==7,]))
@@ -153,14 +157,14 @@ sepcorhmm <- upperTriangle(cor(hmmoutput[month==9,]))
 sepcorcopula <- upperTriangle(cor(copulaoutput[month==9,]))
 cordata <- data.frame(cor=c(julcorinput,augcorinput,sepcorinput,julcorhmm,augcorhmm,sepcorhmm, julcorcopula, augcorcopula, sepcorcopula))
 cordata$month <- rep(c('July','August','September'),each=74691)
-cordata$source <- rep(c('IMERG','HMM', 'Wilks'),each=74691*3)
+cordata$source <- rep(c('IMERG','HMM', 'HMM-GC'),each=74691*3)
 cordata$month <- relevel(as.factor(cordata$month),ref='July')
-cordata$source <- factor(cordata$source, levels = c('IMERG','HMM','Wilks'))
+cordata$source <- factor(cordata$source, levels = c('IMERG','HMM','HMM-GC'))
 
-ggplot(cordata,aes(x=month,y=cor,fill=source)) + geom_boxplot() + 
-      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+ggplot(cordata,aes(x=month,y=cor,fill=source)) + geom_boxplot() +
+      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 18, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 18, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 20, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 20, angle = 90, hjust = .5, vjust = 2, face = "plain"),
       legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) +
@@ -192,7 +196,7 @@ max3 <- apply(hmmoutput[month==9,1:numLocation],1,quantile,1)
 hmmsummary$extreme <- c(max1,max2,max3)
 
 
-copulasummary <- data.frame(month = month ,source=rep('Wilks',dataLen))
+copulasummary <- data.frame(month = month ,source=rep('HMM-GC',dataLen))
 avg1 <- apply(copulaoutput[month==7,1:numLocation],1,mean)
 avg2 <- apply(copulaoutput[month==8,1:numLocation],1,mean)
 avg3 <- apply(copulaoutput[month==9,1:numLocation],1,mean)
@@ -216,20 +220,19 @@ summary$month <- factor(summary$month)
 summary$month <- relevel(summary$month,ref='July')
 
 ggplot(summary,aes(x=month,y=total,fill=source)) + geom_boxplot() +
-      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 17, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 17, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 17, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 19, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 19, angle = 90, hjust = .5, vjust = 2, face = "plain"),
       legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) +
       labs(x='Month', y = 'Daily mean basin precipitation (mm)', fill = 'Source')
 
 ggplot(summary,aes(x=month,y=extreme,fill=source)) + geom_boxplot() +
-      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15), 
+      theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),
       axis.text.x = element_text(color = "grey20", size = 17, angle = 0, hjust = .5, vjust = .5, face = "plain"),
-      axis.text.y = element_text(color = "grey20", size = 17, angle = 0, hjust = 1, vjust = 0, face = "plain"),  
+      axis.text.y = element_text(color = "grey20", size = 17, angle = 0, hjust = 1, vjust = 0, face = "plain"),
       axis.title.x = element_text(color = "grey20", size = 19, angle = 0, hjust = .5, vjust = 0, face = "plain"),
       axis.title.y = element_text(color = "grey20", size = 19, angle = 90, hjust = .5, vjust = 2, face = "plain"),
       legend.text = element_text(size=15), legend.title = element_text(size=18), legend.key.size = unit(.8, "cm")) +
       labs(x='Month', y = 'Daily maximum precipitation (mm)', fill = 'Source')
-
