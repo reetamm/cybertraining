@@ -1,0 +1,31 @@
+# Action
+action simulation
+
+# Type of the model
+model_type hmm
+
+# Number of hidden states
+num_states 4
+
+# Emission distribution
+emission
+independent 387 delta-gamma 3
+
+# Number of real-valued vector components for the data
+num_real_data_components 387
+
+# Number of output data sequences
+num_data_sequences 18
+
+# Length of each sequence
+data_sequence_length 92
+
+# Output file
+output ../outputs/sim_potomac_data_julsep4state
+
+# Model file name
+model_filename ../outputs/learn_hmm_potomac_julsep4state
+
+# Number of simulations per output sequence
+num_simulations 1
+

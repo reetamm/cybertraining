@@ -1,0 +1,33 @@
+# Action
+action learn
+
+# Type of the model
+model_type hmm
+
+# Number of hidden states
+num_states 4
+
+# Emission distribution
+emission
+independent 387 delta-gamma 3
+
+# Data file
+data ../data/potomacJulSep
+
+# Number of real-valued vector components for the data
+num_real_data_components 387
+
+# Number of output data sequences
+num_data_sequences 18
+
+# Length of each sequence
+data_sequence_length 92
+
+# Output file
+output ../outputs/learn_hmm_potomac_julsep
+
+# Number of random restarts
+num_restarts 10
+
+em_verbose
+
