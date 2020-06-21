@@ -12,11 +12,11 @@ Team x Project of the CyberTraining program at UMBC in 2020 (http://cybertrainin
 
 **Instructions on how to run the code**
 
-The following ancillary files should be in the same folder as the R scripts:
-viterbi_potomac_julsep4state (the viterbi output from MVNHMM)
-params.json (Parameter file extracted from MVNHMM output)
-PotomacJulSep - The historical data
-latlong - File with latitude and longitude data
+The following ancillary files should be in the same folder as the R scripts:  
+viterbi_potomac_julsep4state (the viterbi output from MVNHMM)  
+params.json (Parameter file extracted from MVNHMM output)  
+PotomacJulSep - The historical data  
+latlong - File with latitude and longitude data  
 
 01 - gammacorrels.R
 Set values for line numbers 7-21, for the User Inputs section. Explanation for each variable is in the file.
