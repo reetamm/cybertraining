@@ -11,6 +11,7 @@ Team x Project of the CyberTraining program at UMBC in 2020 (http://cybertrainin
 **Structures of implementation**:
 
 **Instructions on how to run the code**
+
 The following ancillary files should be in the same folder as the R scripts:
 viterbi_potomac_julsep4state (the viterbi output from MVNHMM)
 params.json (Parameter file extracted from MVNHMM output)

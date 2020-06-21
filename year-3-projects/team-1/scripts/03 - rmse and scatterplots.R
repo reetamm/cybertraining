@@ -8,6 +8,8 @@ library(tidyr)
 library(psych)
 theme_set(theme_bw())
 library(sf)
+
+# User inputs
 setwd("D:/precip/")
 inputdata <- read.table('PotomacJulSep')
 #View(inputdata)

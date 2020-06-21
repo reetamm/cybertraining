@@ -6,6 +6,7 @@ library(psych)
 theme_set(theme_bw())
 library(sf)
 
+# User inputs
 setwd('D:/precip')
 viterbiFile <- 'viterbi_potomac_julsep4state' #Output from MVNHMM viterbi process
 paramFile <- 'params.json' #Output from learn_process.py
