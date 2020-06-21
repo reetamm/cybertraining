@@ -12,11 +12,12 @@ Team x Project of the CyberTraining program at UMBC in 2020 (http://cybertrainin
 
 **Instructions on how to run the code**
 
-The following ancillary files should be in the same folder as the R scripts:  
+The following data and ancillary files should be in the same folder as the R scripts:  
 **viterbi_potomac_julsep4state** - the Viterbi output from MVNHMM  
 **params.json** - Parameter file extracted from MVNHMM output  
 **PotomacJulSep** - The historical data  
 **latlong** - File with latitude and longitude data  
+**PotomacJulSep** - historical data  
 
 **01 - gammacorrels.R**  
 Set values for line numbers 7-21, for the User Inputs section. Explanation for each variable is in the file.
@@ -30,7 +31,8 @@ and mean plot, and the spatial plots for the basin precipitation. no ggsave func
 **Note** - feature can be added to ggsave() the plots to a fixed resolution.
 
 **02 - hmmwilksoutput.R**  
-Functionally identical to 02 - hmmgammacopulaoutput.R but instead of comparing HMM and HMM-GC it compares HMM and Wilks to produce identical plots.
+Functionally identical to 02 - hmmgammacopulaoutput.R but instead of comparing HMM and HMM-GC it compares HMM and Wilks to produce identical plots.  
+**Note** - Requires the file **JulSepWilksSyn*  
 
 **03 - rmse and scatterplots.R**  
 Set values for line numbers 7-21, for the User Inputs section. Explanation of variabes should be the same as files 01 and 02.
