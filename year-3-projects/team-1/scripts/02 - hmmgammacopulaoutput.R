@@ -84,6 +84,18 @@ data <- rbind(inputdata,hmmoutput,copulaoutput)
 #data$total[data$total>10000]=10000
 data$year <- year
 
+## Lat and Long data
+## Getting the lat and long requires the forcig files to be in the same directory
+#file_names <- list.files(pattern="forcing_*",full.names = T)
+#lat <- substr(file_names,11,17)
+#long <- substr(file_names,19,26)
+#lat <- as.numeric(as.character(lat))
+#long <- as.numeric(as.character(long))
+#write.table(data.frame(lat,long),'latlong')
+latlong = read.table('latlong')
+lat = latlong[,1]
+long = latlong[,2]
+
 ## temporal data
 ggplot(data[data$year==2018 & data$source!='HMM-GC',],aes(y=total,x=seq,col=source))+geom_line(lwd=1.1) +
         theme(panel.grid.minor = element_blank(), plot.title = element_text(hjust = 0.5, size = 15),

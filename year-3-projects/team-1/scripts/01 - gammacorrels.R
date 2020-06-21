@@ -36,11 +36,16 @@ day <- day(date)
 year <- rep(startYear:endYear,each=numDays)
 
 ## Getting the lat and long requires the forcig files to be in the same directory
-file_names <- list.files(pattern="forcing_*",full.names = T)
-lat <- substr(file_names,11,17)
-long <- substr(file_names,19,26)
-lat <- as.numeric(as.character(lat))
-long <- as.numeric(as.character(long))
+## Getting the lat and long requires the forcig files to be in the same directory
+#file_names <- list.files(pattern="forcing_*",full.names = T)
+#lat <- substr(file_names,11,17)
+#long <- substr(file_names,19,26)
+#lat <- as.numeric(as.character(lat))
+#long <- as.numeric(as.character(long))
+#write.table(data.frame(lat,long),'latlong')
+latlong = read.table('latlong')
+lat = latlong[,1]
+long = latlong[,2]
 
 ## Parameters of the HMM from the learn process
 alpha <- params$firstEntryProb #Initial distribution at
