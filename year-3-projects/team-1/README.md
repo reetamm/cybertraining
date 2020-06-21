@@ -32,7 +32,7 @@ and mean plot, and the spatial plots for the basin precipitation. no ggsave func
 
 **02 - hmmwilksoutput.R**  
 Functionally identical to 02 - hmmgammacopulaoutput.R but instead of comparing HMM and HMM-GC it compares HMM and Wilks to produce identical plots.  
-**Note** - Requires the file **JulSepWilksSyn*  
+**Note** - Requires the file **JulSepWilksSyn**  
 
 **03 - rmse and scatterplots.R**  
 Set values for line numbers 7-21, for the User Inputs section. Explanation of variabes should be the same as files 01 and 02.
