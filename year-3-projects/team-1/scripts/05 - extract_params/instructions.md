@@ -1,4 +1,4 @@
-A model file from the MVNHMM learn process must be in the same folder as is used as inputfile. For example, ancillary/params
+A model file from the MVNHMM learn process must be in the same folder as is used as inputfile. For example, `ancillary/learn_hmm_potomac_julsep4state`
 
 The output json file is used for HMMGC simulations.
 
